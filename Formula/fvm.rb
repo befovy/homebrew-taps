@@ -17,6 +17,11 @@ class Fvm < Formula
       bin.install "fvm"
     end
   
+    bottle do
+      root_url "https://github.com/befovy/fvm/releases/download/v0.3.1"
+      sha256 "ebce7a0615e7a372dc8ef8ba92f0aa6a0dd076ee126ca2efade2e1be81fdcab8" => :catalina
+    end
+
     test do
       # `test do` will create, run in and delete a temporary directory.
       #
