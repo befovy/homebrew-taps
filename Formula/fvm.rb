@@ -4,9 +4,9 @@
 class Fvm < Formula
     desc "Flutter Version Manager"
     homepage "https://github.com/befovy/fvm"
-    url "https://github.com/befovy/fvm/archive/v0.3.1.tar.gz"
-    version "v0.3.1"
-    sha256 "1affcc833b8443689092d71eff8746ed60b5a6539780eceecec9e6531869b7ad"
+    url "https://github.com/befovy/fvm/archive/v0.4.0.tar.gz"
+    version "v0.4.0"
+    sha256 "abf18c801b7c59d5d765b2485f0e01cf653ec9ad8d789f17efe9f8f469472b51"
     head "https://github.com/befovy/fvm.git"
   
     depends_on "go" => :build
@@ -18,8 +18,8 @@ class Fvm < Formula
     end
   
     bottle do
-      root_url "https://github.com/befovy/fvm/releases/download/v0.3.1"
-      sha256 "ebce7a0615e7a372dc8ef8ba92f0aa6a0dd076ee126ca2efade2e1be81fdcab8" => :catalina
+      root_url "https://github.com/befovy/fvm/releases/download/v0.4.0"
+      sha256 "f2e674e13ac6c1160cc8ef46d6fae85da80b48b165ca949c58d79a34e0b31885" => :catalina
     end
 
     test do
