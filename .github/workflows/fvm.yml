@@ -6,7 +6,7 @@ jobs:
     name: Check and Update fvm
     runs-on: macos-latest
     steps:
-      - name: Get Latest fvm release
+      - name: Get latest fvm release
         id: latest_release
         uses: actions/github-script@v2
         with:
@@ -23,7 +23,7 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v1
 
-      - name: Get Local Version
+      - name: Get local version
         id: local_version
         run: |
           VERSION=`grep version Formula/fvm.rb | head -n 1`
@@ -31,6 +31,10 @@ jobs:
           VERSION=${VERSION//\"}
           echo $VERSION
           echo "::set-output name=version::$VERSION"
+
+      - name: Install
+        run: |
+          brew install --build-from-source Formula/fvm.rb
 
       - name: Update
         if: ${{ steps.latest_release.outputs.result != steps.local_version.outputs.version}}
@@ -48,5 +52,11 @@ jobs:
           SHA256=${SHA256// }
           sed -i -- "9s/.*/  sha256 \"${SHA256}\"/" Formula/fvm.rb
           cat Formula/fvm.rb
-          brew install ./Formula/fvm.rb --build-bottle | echo "0"
-          brew bottle fvm | echo "0"
+          brew uninstall fvm | echo "uninstall fvm"
+          brew install --build-bottle ./Formula/fvm.rb
+          brew tap befovy/taps
+          cp -v Formula/fvm.rb /usr/local/Homebrew/Library/Taps/befovy/homebrew-taps/Formula/fvm.rb
+          brew bottle fvm
+          ls
+          # find . | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
+
