@@ -29,23 +29,24 @@ jobs:
           VERSION=`grep version Formula/fvm.rb | head -n 1`
           VERSION=${VERSION##* }
           VERSION=${VERSION//\"}
+          echo $VERSION
           echo "::set-output name=version::$VERSION"
 
       - name: Update
-        # if: ${{ steps.latest_release.outputs.result != }}
-        run: |
-          echo "${{steps.latest_release.outputs.result}}"
-          echo "${{steps.local_version.outputs.version}}"
-
-      - name: Update2
         if: ${{ steps.latest_release.outputs.result != steps.local_version.outputs.version}}
         run: |
-          echo "${{steps.latest_release.outputs.result}}"
-          echo "${{steps.local_version.outputs.version}}"
-
-
-      - name: Update2
-        if: ${{ steps.latest_release.outputs.result == steps.local_version.outputs.version}}
-        run: |
-          echo "${{steps.latest_release.outputs.result}}"
-          echo "${{steps.local_version.outputs.version}}"
+          LOCAL_VERSION=${{steps.local_version.outputs.version}}
+          LATEST_VERSION=${{steps.latest_release.outputs.result}}
+          sed -i -- "s/${LOCAL_VERSION}/$LATEST_VERSION/g" Formula/fvm.rb
+          SOURCE_URL=https://github.com/befovy/fvm/archive/${LATEST_VERSION}.tar.gz
+          wget $SOURCE_URL
+          echo $SOURCE_URL
+          SHA256=`shasum -a 256 ${LATEST_VERSION}.tar.gz`
+          echo $SHA256
+          SHA256=${SHA256% *}
+          echo $SHA256
+          SHA256=${SHA256// }
+          sed -i -- "9s/.*/  sha256 \"${SHA256}\"/" Formula/fvm.rb
+          cat Formula/fvm.rb
+          brew install ./Formula/fvm.rb --build-bottle | echo "0"
+          brew bottle fvm | echo "0"
