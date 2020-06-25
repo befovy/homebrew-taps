@@ -1,6 +1,7 @@
 name: Fvm Update
-on: [push]
-
+on: 
+  schedule:
+    - cron: "0 21 * * 3"
 jobs:
   build:
     name: Check and Update fvm
@@ -32,17 +33,12 @@ jobs:
           echo $VERSION
           echo "::set-output name=version::$VERSION"
 
-      - name: Install
-        run: |
-          brew install --build-from-source Formula/fvm.rb
-
       - name: Update
         if: ${{ steps.latest_release.outputs.result != steps.local_version.outputs.version}}
         run: |
           LOCAL_VERSION=${{steps.local_version.outputs.version}}
           LATEST_VERSION=${{steps.latest_release.outputs.result}}
-          echo "::set-env name=LOCAL_VERSION::${LOCAL_VERSION}"
-          echo "::set-env name=LATEST_VERSION::${LATEST_VERSION}"
+          brew install --build-from-source Formula/fvm.rb
           sed -i.back "s/${LOCAL_VERSION}/$LATEST_VERSION/g" Formula/fvm.rb
           SOURCE_URL=https://github.com/befovy/fvm/archive/${LATEST_VERSION}.tar.gz
           wget $SOURCE_URL
@@ -69,10 +65,9 @@ jobs:
           rm Formula/fvm.rb.back
           rm bottle.txt
           rm merge.txt
-          ls
-          # find . | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
 
       - name: Commit files
+        if: ${{ steps.latest_release.outputs.result != steps.local_version.outputs.version}}
         run: |
           git config --local user.email "befovy@gmail.com"
           git config --local user.name "befvy"
@@ -80,6 +75,7 @@ jobs:
           git commit -m "feat: fvm update version to ${LATEST_VERSION}" -a
 
       - name: Create new release
+        if: ${{ steps.latest_release.outputs.result != steps.local_version.outputs.version}}
         id: create_release
         uses: actions/create-release@v1
         env:
@@ -91,6 +87,7 @@ jobs:
           prerelease: false
 
       - name: Upload Release Asset
+        if: ${{ steps.latest_release.outputs.result != steps.local_version.outputs.version}}
         id: upload-linux-release-asset
         uses: actions/upload-release-asset@v1
         env:
@@ -102,6 +99,7 @@ jobs:
           asset_content_type: application/gzip
 
       - name: Push changes
+        if: ${{ steps.latest_release.outputs.result != steps.local_version.outputs.version}}
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
