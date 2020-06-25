@@ -1,0 +1,51 @@
+name: Fvm Update
+on: [push]
+
+jobs:
+  build:
+    name: Check and Update fvm
+    runs-on: macos-latest
+    steps:
+      - name: Get Latest fvm release
+        id: latest_release
+        uses: actions/github-script@v2
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          result-encoding: string
+          script: |
+            const {data:release} = await github.repos.getLatestRelease({
+              owner: "befovy",
+              repo: "fvm",
+            })
+            console.log(release)
+            return release.tag_name
+
+      - name: Check out code
+        uses: actions/checkout@v1
+
+      - name: Get Local Version
+        id: local_version
+        run: |
+          VERSION=`grep version Formula/fvm.rb | head -n 1`
+          VERSION=${VERSION##* }
+          VERSION=${VERSION//\"}
+          echo "::set-output name=version::$VERSION"
+
+      - name: Update
+        # if: ${{ steps.latest_release.outputs.result != }}
+        run: |
+          echo "${{steps.latest_release.outputs.result}}"
+          echo "${{steps.local_version.outputs.version}}"
+
+      - name: Update2
+        if: ${{ steps.latest_release.outputs.result != steps.local_version.outputs.version}}
+        run: |
+          echo "${{steps.latest_release.outputs.result}}"
+          echo "${{steps.local_version.outputs.version}}"
+
+
+      - name: Update2
+        if: ${{ steps.latest_release.outputs.result == steps.local_version.outputs.version}}
+        run: |
+          echo "${{steps.latest_release.outputs.result}}"
+          echo "${{steps.local_version.outputs.version}}"
