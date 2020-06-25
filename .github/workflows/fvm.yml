@@ -41,7 +41,9 @@ jobs:
         run: |
           LOCAL_VERSION=${{steps.local_version.outputs.version}}
           LATEST_VERSION=${{steps.latest_release.outputs.result}}
-          sed -i -- "s/${LOCAL_VERSION}/$LATEST_VERSION/g" Formula/fvm.rb
+          echo "::set-env name=LOCAL_VERSION::${LOCAL_VERSION}"
+          echo "::set-env name=LATEST_VERSION::${LATEST_VERSION}"
+          sed -i.back "s/${LOCAL_VERSION}/$LATEST_VERSION/g" Formula/fvm.rb
           SOURCE_URL=https://github.com/befovy/fvm/archive/${LATEST_VERSION}.tar.gz
           wget $SOURCE_URL
           echo $SOURCE_URL
@@ -56,7 +58,51 @@ jobs:
           brew install --build-bottle ./Formula/fvm.rb
           brew tap befovy/taps
           cp -v Formula/fvm.rb /usr/local/Homebrew/Library/Taps/befovy/homebrew-taps/Formula/fvm.rb
+          sed -i.back "33,40d;" Formula/fvm.rb 
           brew bottle fvm
+          brew bottle --root-url https://github.com/befovy/homebrew-taps/releases/download/fvm-${LATEST_VERSION} fvm | tail -n 5 > bottle.txt
+          cat bottle.txt
+          cat Formula/fvm.rb bottle.txt > merge.txt
+          echo end >> merge.txt
+          cp merge.txt Formula/fvm.rb
+          cat Formula/fvm.rb
+          rm Formula/fvm.rb.back
+          rm bottle.txt
+          rm merge.txt
           ls
           # find . | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
 
+      - name: Commit files
+        run: |
+          git config --local user.email "befovy@gmail.com"
+          git config --local user.name "befvy"
+          git add -u
+          git commit -m "feat: fvm update version to ${LATEST_VERSION}" -a
+
+      - name: Create new release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: fvm-${{steps.latest_release.outputs.result}}
+          release_name: Release fvm-${{steps.latest_release.outputs.result}}
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        id: upload-linux-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./fvm--${{steps.latest_release.outputs.result}}.catalina.bottle.tar.gz
+          asset_name: fvm-${{steps.latest_release.outputs.result}}.catalina.bottle.tar.gz
+          asset_content_type: application/gzip
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      
