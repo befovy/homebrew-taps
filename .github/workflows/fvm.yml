@@ -72,7 +72,7 @@ jobs:
           git config --local user.email "befovy@gmail.com"
           git config --local user.name "befvy"
           git add -u
-          git commit -m "feat: fvm update version to ${LATEST_VERSION}" -a
+          git commit -m "feat: fvm update version to ${{steps.latest_release.outputs.result}}" -a
 
       - name: Create new release
         if: ${{ steps.latest_release.outputs.result != steps.local_version.outputs.version}}
