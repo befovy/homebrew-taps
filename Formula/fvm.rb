@@ -32,6 +32,6 @@ class Fvm < Formula
 
   bottle do
     root_url "https://github.com/befovy/homebrew-taps/releases/download/fvm-v0.8.1"
-    sha256 cellar: :any_skip_relocation, catalina: "762de672154069db6fb23593980d57f25842a718cf6baf48107fc8fb87e11005"
+    sha256 cellar: :any_skip_relocation, catalina: "0dcbdd18bc7984dea46e10724aa26b986935f6c733c8b2cdb2d130009593452f"
   end
 end
